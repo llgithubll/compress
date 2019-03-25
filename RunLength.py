@@ -1,4 +1,4 @@
-from bitstring import BitArray, ConstBitStream, Bits
+from bitio import BitReader, BitWriter
 
 
 class RunLength:
@@ -17,21 +17,20 @@ class RunLength:
         :param origin_filepath: 原始文件
         :return: 不返回任何值
         """
-        com_bits = ConstBitStream(bytes=open(compress_filepath, 'rb').read())
-        com_bits_cnt = len(com_bits.bin)
-        assert com_bits_cnt % RunLength.encoding_length == 0, '压缩后的bit个数必须是8的倍数'
-        origin_f = open(origin_filepath, 'wb')
-
-        ori_bits = BitArray()
-        b = BitArray('0b0')
-        for i in range(com_bits_cnt // 8):
-            cnt = com_bits.read(8).uint
-            for j in range(cnt):
-                ori_bits.append(b)
-            b = ~b
-
-        ori_bits.tofile(origin_f)
-        origin_f.close()
+        com_f = open(compress_filepath, 'rb')
+        ori_f = open(origin_filepath, 'wb')
+        with BitReader(com_f) as reader:
+            with BitWriter(ori_f) as writer:
+                b = False
+                while True:
+                    cnt = reader.read_bits(RunLength.encoding_length)
+                    if not reader.read:  # End-of-file?
+                        break
+                    for i in range(cnt):
+                        writer.write_bit(b)
+                    b = not b
+        com_f.close()
+        ori_f.close()
 
     @staticmethod
     def compress(origin_filepath, compress_filepath):
@@ -41,30 +40,31 @@ class RunLength:
         :param compress_filepath: 压缩文件
         :return: 没有返回值
         """
-        ori_bits = ConstBitStream(bytes=open(origin_filepath, 'rb').read())
-        ori_bits_cnt = len(ori_bits.bin)
-        compress_f = open(compress_filepath, 'wb')
+        ori_f = open(origin_filepath, 'rb')
+        com_f = open(compress_filepath, 'wb')
 
-        cnt = 0
-        com_bits = BitArray()
-        old = BitArray('0b0')
-        for i in range(ori_bits_cnt):
-            b = ori_bits.read(1)
-            if b != old:
-                com_bits.append(Bits(uint=cnt, length=RunLength.encoding_length))
+        with BitReader(ori_f) as reader:
+            with BitWriter(com_f) as writer:
                 cnt = 0
-                old = ~old
-            else:
-                if cnt == RunLength.max_length:
-                    com_bits.append(Bits(uint=cnt, length=RunLength.encoding_length))
-                    cnt = 0
-                    com_bits.append(Bits(uint=cnt, length=RunLength.encoding_length))
-            cnt += 1
-        com_bits.append(Bits(uint=cnt, length=RunLength.encoding_length))
+                old = False
+                while True:
+                    b = True if reader.read_bit() else False
+                    if not reader.read:  # End-of-file?
+                        break
+                    if b is not old:
+                        writer.write_bits(cnt, RunLength.encoding_length)
+                        cnt = 0
+                        old = not old
+                    else:
+                        if cnt == RunLength.max_length:
+                            writer.write_bits(cnt, RunLength.encoding_length)
+                            cnt = 0  # 另一种比特长度为0, 然后可以接着继续之前的比特计数
+                            writer.write_bits(cnt, RunLength.encoding_length)
+                    cnt += 1
+                writer.write_bits(cnt, RunLength.encoding_length)
 
-        print('compress rate:', len(com_bits.bin) / len(ori_bits.bin))
-        com_bits.tofile(compress_f)
-        compress_f.close()
+        ori_f.close()
+        com_f.close()
 
 
 if __name__ == '__main__':
