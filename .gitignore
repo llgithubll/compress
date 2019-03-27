@@ -1,4 +1,7 @@
+# 忽略temp_files中的所有文件
 temp_files
+# 但是保留该文件夹
+!*temp_files/
 .idea
 *.pyc
 latex
