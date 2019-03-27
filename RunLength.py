@@ -3,34 +3,10 @@ from bitio import BitReader, BitWriter
 
 class RunLength:
     """
-    游程编码
-    通过对重复比特计数, 实现压缩.
+    游程编码: 通过对重复比特计数, 实现压缩.
     """
     encoding_length = 8  # 游程长度的编码位数
     max_length = pow(2, encoding_length) - 1  # 游程的最大长度
-
-    @staticmethod
-    def expand(compress_filepath, origin_filepath):
-        """
-        将``压缩文件``, 解压写到``原始文件``中
-        :param compress_filepath: 压缩文件
-        :param origin_filepath: 原始文件
-        :return: 不返回任何值
-        """
-        com_f = open(compress_filepath, 'rb')
-        ori_f = open(origin_filepath, 'wb')
-        with BitReader(com_f) as reader:
-            with BitWriter(ori_f) as writer:
-                b = False
-                while True:
-                    cnt = reader.read_bits(RunLength.encoding_length)
-                    if not reader.read:  # End-of-file?
-                        break
-                    for i in range(cnt):
-                        writer.write_bit(b)
-                    b = not b
-        com_f.close()
-        ori_f.close()
 
     @staticmethod
     def compress(origin_filepath, compress_filepath):
@@ -66,12 +42,33 @@ class RunLength:
         ori_f.close()
         com_f.close()
 
+    @staticmethod
+    def expand(compress_filepath, origin_filepath):
+        """
+        将``压缩文件``, 解压写到``原始文件``中
+        :param compress_filepath: 压缩文件
+        :param origin_filepath: 原始文件
+        :return: 不返回任何值
+        """
+        com_f = open(compress_filepath, 'rb')
+        ori_f = open(origin_filepath, 'wb')
+        with BitReader(com_f) as reader:
+            with BitWriter(ori_f) as writer:
+                b = False
+                while True:
+                    cnt = reader.read_bits(RunLength.encoding_length)
+                    if not reader.read:  # End-of-file?
+                        break
+                    for i in range(cnt):
+                        writer.write_bit(b)
+                    b = not b
+        com_f.close()
+        ori_f.close()
+
 
 if __name__ == '__main__':
-    src_f = lambda s: 'data/' + s
-    dest_f = lambda s: 'temp_files/' + s + '.rl'
-
-    import os
-    for name in os.listdir('data'):
-        print(name)
-        RunLength.compress(src_f(name), dest_f(name))
+    src_fp = 'data/4runs.bin'
+    com_fp = 'temp_files/4runs.bin.rl'
+    exp_fp = 'temp_files/4runs.bin'
+    RunLength.compress(src_fp, com_fp)
+    RunLength.expand(com_fp, exp_fp)
