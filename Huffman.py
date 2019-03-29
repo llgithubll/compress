@@ -6,8 +6,8 @@ class Huffman:
     """
     Huffman压缩, 对字符(字节)统计频率, 并以此重新编码, 实现编码比特位最少
     """
-    char_bit_len = 8  # 字符字节位数
-    num_bit_len = 32  # 数字字节位数(用来记录文本长度)
+    char_bit_len = 8  # 字符bit位数
+    num_bit_len = 32  # 数字bit位数(用来记录文本长度)
 
     class Node:
         """Huffman树的节点"""
