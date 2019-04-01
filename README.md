@@ -43,11 +43,123 @@ Huffman压缩, 通过对字符统计频率, 为频率高的构建短编码, 为�
 
 
 ## LZW
-**Lempel-Ziv-Welch**数据压缩算法, 通过为连续的多个字符(字符串)分配定长的编码, 实现压缩.
+**Lempel-Ziv-Welch**数据压缩算法, 通过为连续的多个字符(字符串)分配定长的编码, 实现压缩.**LZW算法为输入中的变长模式(字符串)生成一张定长的编码编译表.**
 
-**LZW算法为输入中的变长模式生成一张定长的编码编译表.**
+### 压缩
 
+* 首先为原始文件的字符集中的每个字符分配一个定长编码
+* 然后从输入流中不断的为新字符串赋予更大的编码值
+    1. 找出未处理的输入在符号表中最长的前缀字符串s
+    2. 将s的编码值写入压缩文件
+    3. 扫描s后的一个字符c
+    4. 在符号表中将字符串s+c赋予下一个编码值
 
+压缩时维护了一张以字符串作为键, 以(定长)编码为值的编译表
+
+### 解压
+
+* 首先, 关联编码值与字符集中的每个字符, 并用val保存解码的第一个字符
+    1. 将val表示的字符(串)写入文件
+    2. 从压缩文件读取一个编码x, 并得到其关联的字符串s
+    3. *为val+s\[0\]分配下一个编码值*
+    4. 将当前val设为s
+
+解压时维护了一张{编码值: 字符串}的符号表
+
+## Performance
+
+```text
+------------------------------ RunLength ------------------------------
+data/4runs.bin
+bits 40 -> 32 ,rate 0.800
+compress 0.001s, expand 0.001s
+
+data/abra.txt
+bits 96 -> 416 ,rate 4.333
+compress 0.000s, expand 0.001s
+
+data/q32x48.bin
+bits 1536 -> 1144 ,rate 0.745
+compress 0.002s, expand 0.002s
+
+data/q64x96.bin
+bits 6144 -> 2296 ,rate 0.374
+compress 0.008s, expand 0.006s
+
+------------------------------ Huffman ------------------------------
+data/4runs.bin
+bits 40 -> 96 ,rate 2.400
+compress 0.001s, expand 0.000s
+
+data/abra.txt
+bits 96 -> 120 ,rate 1.250
+compress 0.001s, expand 0.001s
+
+data/q32x48.bin
+bits 1536 -> 816 ,rate 0.531
+compress 0.004s, expand 0.002s
+
+data/q64x96.bin
+bits 6144 -> 2032 ,rate 0.331
+compress 0.012s, expand 0.009s
+
+data/tinytinyTale.txt
+bits 408 -> 352 ,rate 0.863
+compress 0.002s, expand 0.001s
+
+data/tinyTale.txt
+bits 2216 -> 1352 ,rate 0.610
+compress 0.006s, expand 0.003s
+
+data/medTale.txt
+bits 45056 -> 23912 ,rate 0.531
+compress 0.091s, expand 0.069s
+
+data/tale.txt
+bits 5812560 -> 3043928 ,rate 0.524
+compress 11.938s, expand 7.146s
+
+------------------------------ LZW ------------------------------
+data/4runs.bin
+bits 40 -> 72 ,rate 1.800
+compress 0.015s, expand 0.001s
+
+data/abra.txt
+bits 96 -> 136 ,rate 1.417
+compress 0.015s, expand 0.000s
+
+data/q32x48.bin
+bits 1536 -> 1176 ,rate 0.766
+compress 0.025s, expand 0.003s
+
+data/q64x96.bin
+bits 6144 -> 2824 ,rate 0.460
+compress 0.047s, expand 0.007s
+
+data/tinytinyTale.txt
+bits 408 -> 456 ,rate 1.118
+compress 0.019s, expand 0.001s
+
+data/tinyTale.txt
+bits 2216 -> 1896 ,rate 0.856
+compress 0.036s, expand 0.004s
+
+data/medTale.txt
+bits 45056 -> 27016 ,rate 0.600
+compress 0.331s, expand 0.058s
+
+data/tale.txt
+bits 5812560 -> 2667936 ,rate 0.459
+compress 30.548s, expand 6.579s
+
+data/ababLZW.txt
+bits 56 -> 64 ,rate 1.143
+compress 0.015s, expand 0.001s
+
+data/abraLZW.txt
+bits 136 -> 160 ,rate 1.176
+compress 0.015s, expand 0.001s
+```
 
 ## 参考
 [Algorithm fourth edition: Data compression](https://algs4.cs.princeton.edu/55compression/)

@@ -6,6 +6,7 @@ import time
 from bitio import BitReader
 from RunLength import RunLength
 from Huffman import Huffman
+from LZW import LZW
 
 
 class FileBits:
@@ -44,8 +45,8 @@ def test_compress_expand(ori_files, com_files, exp_files, algs):
         e_exp = time.time()
         of_bits, cf_bits, ef_bits = FileBits(of), FileBits(cf), FileBits(ef)
         print(of)
-        print('len', len(of_bits), '->', len(cf_bits), 'rate', len(cf_bits) / len(of_bits))
-        print('compress {}s, expand {}s'.format(e_com - b_com, e_exp - e_com))
+        print('bits', len(of_bits), '->', len(cf_bits), ',rate {:.3f}'.format(len(cf_bits) / len(of_bits)))
+        print('compress {:.3f}s, expand {:.3f}s'.format(e_com - b_com, e_exp - e_com))
         assert of_bits == ef_bits  # origin bits == expand bits
         print()
 
@@ -96,6 +97,42 @@ def test_huffman():
     test_compress_expand(ori_files, com_files, exp_files, Huffman)
 
 
+def test_lzw():
+    print('-' * 30, 'LZW', '-' * 30)
+    ori_files = ['data/4runs.bin',
+                 'data/abra.txt',
+                 'data/q32x48.bin',
+                 'data/q64x96.bin',
+                 'data/tinytinyTale.txt',
+                 'data/tinyTale.txt',
+                 'data/medTale.txt',
+                 'data/tale.txt',
+                 'data/ababLZW.txt',
+                 'data/abraLZW.txt']
+    com_files = ['temp_files/4runs.bin.lzw',
+                 'temp_files/abra.txt.lzw',
+                 'temp_files/q32x48.bin.lzw',
+                 'temp_files/q64x96.bin.lzw',
+                 'temp_files/tinytinyTale.txt.lzw',
+                 'temp_files/tinyTale.txt.lzw',
+                 'temp_files/medTale.txt.lzw',
+                 'temp_files/tale.txt.lzw',
+                 'temp_files/ababLZW.txt.lzw',
+                 'temp_files/abraLZW.txt.lzw']
+    exp_files = ['temp_files/4runs.bin',
+                 'temp_files/abra.txt',
+                 'temp_files/q32x48.bin',
+                 'temp_files/q64x96.bin',
+                 'temp_files/tinytinyTale.txt',
+                 'temp_files/tinyTale.txt',
+                 'temp_files/medTale.txt',
+                 'temp_files/tale.txt',
+                 'temp_files/ababLZW.txt',
+                 'temp_files/abraLZW.txt']
+    test_compress_expand(ori_files, com_files, exp_files, LZW)
+
+
 if __name__ == '__main__':
     test_run_length()
     test_huffman()
+    test_lzw()
