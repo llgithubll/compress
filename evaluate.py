@@ -36,7 +36,7 @@ class FileBits:
         self.f.close()
 
 
-def test_compress_expand(ori_files, com_files, exp_files, algs):
+def evaluate_compress_expand(ori_files, com_files, exp_files, algs):
     for of, cf, ef in zip(ori_files, com_files, exp_files):
         b_com = time.time()
         algs.compress(of, cf)  # 压缩, origin -> compress
@@ -51,7 +51,7 @@ def test_compress_expand(ori_files, com_files, exp_files, algs):
         print()
 
 
-def test_run_length():
+def evaluate_run_length():
     print('-' * 30, 'RunLength', '-' * 30)
     ori_files = ['data/4runs.bin',
                  'data/abra.txt',
@@ -65,10 +65,10 @@ def test_run_length():
                  'temp_files/abra.txt',
                  'temp_files/q32x48.bin',
                  'temp_files/q64x96.bin']
-    test_compress_expand(ori_files, com_files, exp_files, RunLength)
+    evaluate_compress_expand(ori_files, com_files, exp_files, RunLength)
 
 
-def test_huffman():
+def evaluate_huffman():
     print('-' * 30, 'Huffman', '-' * 30)
     ori_files = ['data/4runs.bin',
                  'data/abra.txt',
@@ -94,10 +94,10 @@ def test_huffman():
                  'temp_files/tinyTale.txt',
                  'temp_files/medTale.txt',
                  'temp_files/tale.txt']
-    test_compress_expand(ori_files, com_files, exp_files, Huffman)
+    evaluate_compress_expand(ori_files, com_files, exp_files, Huffman)
 
 
-def test_lzw():
+def evaluate_lzw():
     print('-' * 30, 'LZW', '-' * 30)
     ori_files = ['data/4runs.bin',
                  'data/abra.txt',
@@ -129,10 +129,10 @@ def test_lzw():
                  'temp_files/tale.txt',
                  'temp_files/ababLZW.txt',
                  'temp_files/abraLZW.txt']
-    test_compress_expand(ori_files, com_files, exp_files, LZW)
+    evaluate_compress_expand(ori_files, com_files, exp_files, LZW)
 
 
 if __name__ == '__main__':
-    test_run_length()
-    test_huffman()
-    test_lzw()
+    evaluate_run_length()
+    evaluate_huffman()
+    evaluate_lzw()
